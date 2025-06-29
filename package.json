@@ -1,0 +1,27 @@
+{
+  "name": "mutual-hostel-room-manager",
+  "version": "1.0.0",
+  "main": "index.js",
+  "description": "Smart Room Allocation System for VIT Bhopal Hostel Students",
+  "keywords": ["hostel", "room-allocation", "mutual-preferences", "student-management"],
+  "author": "VIT Bhopal",
+  "license": "ISC",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node backend/server.js",
+    "dev": "nodemon backend/server.js",
+    "add-wardens": "node backend/scripts/addWardens.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.5.0",
+    "dotenv-cli": "^8.0.0",
+    "exceljs": "^4.4.0",
+    "express": "^5.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.16.0",
+    "multer": "^2.0.1",
+    "xlsx": "^0.18.5"
+  }
+}

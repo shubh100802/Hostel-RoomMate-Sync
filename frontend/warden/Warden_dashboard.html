@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Warden Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            background: #eef2f7;
+        }
+
+        .header {
+            width: 100%;
+            background-color: #1a73e8;
+            color: white;
+            font-size: 1.6rem;
+            font-weight: bold;
+            padding: 15px 20px;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .main-wrapper {
+            flex: 1;
+            display: flex;
+            flex-direction: row;
+        }
+
+        .sidebar {
+            width: 260px;
+            background: #1a73e8;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            padding: 30px 0;
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .sidebar h2 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .sidebar button {
+            background: none;
+            border: none;
+            color: white;
+            text-align: left;
+            padding: 15px 25px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background 0.2s ease;
+            width: 100%;
+        }
+
+        .sidebar button:hover,
+        .sidebar button.active {
+            background-color: rgba(255, 255, 255, 0.15);
+        }
+
+        .logout-wrapper {
+            margin-top: auto;
+            padding-top: 20px;
+            text-align: center;
+        }
+
+        #logoutBtn {
+            width: 100%;
+            background: none;
+            border: none;
+            color: white;
+            padding: 15px 25px;
+            text-align: left;
+            font-size: 1rem;
+            cursor: pointer;
+        }
+
+        #logoutBtn:hover {
+            background-color: rgba(255, 255, 255, 0.15);
+        }
+
+        .main-content {
+            flex: 1;
+            padding: 40px;
+            overflow-y: auto;
+            background: #ffffff;
+            border-top-left-radius: 15px;
+            border-bottom-left-radius: 15px;
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .main-content h1 {
+            font-size: 1.8rem;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .main-content p {
+            color: #555;
+            margin-bottom: 30px;
+            font-size: 1rem;
+        }
+
+        .section {
+            display: none;
+        }
+
+        .section.active {
+            display: block;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        label,
+        input,
+        select {
+            display: block;
+            width: 100%;
+            max-width: 500px;
+            margin: 10px 0 20px;
+            padding: 12px;
+            font-size: 1rem;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+        }
+
+        input[type='file'] {
+            padding: 8px;
+        }
+
+        button.submit-btn {
+            padding: 12px 25px;
+            font-size: 1rem;
+            background: #1a73e8;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        button.submit-btn:hover {
+            background: #0f5dd3;
+        }
+
+        .warden-card {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 15px;
+        }
+
+        .warden-card h3 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .warden-card p {
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .btn-edit {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .btn-delete {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .message {
+            padding: 10px 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            text-align: center;
+            font-weight: 500;
+        }
+
+        .message.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .message.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .main-wrapper {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+                flex-direction: row;
+                justify-content: space-around;
+                align-items: center;
+                padding: 10px 0;
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                z-index: 999;
+                box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.15);
+                height: 60px;
+            }
+
+            .sidebar h2 {
+                display: none;
+            }
+
+            .sidebar button,
+            #logoutBtn {
+                flex: 1;
+                padding: 6px 0;
+                font-size: 0.75rem;
+                text-align: center;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                height: 100%;
+                border: none;
+                background: none;
+                color: white;
+            }
+
+            .sidebar button i,
+            #logoutBtn i {
+                font-size: 1.2rem;
+                margin-bottom: 3px;
+            }
+
+            .main-content {
+                padding: 20px;
+                margin-bottom: 70px;
+                border-radius: 0;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="header">VIT Bhopal</div>
+
+    <div class="main-wrapper">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <h2 id="wardenName">Warden Dashboard</h2>
+            <button onclick="showSection('home')" id="homeBtn" class="active">
+                <i class="fa-solid fa-house"></i> Home
+            </button>
+            <button onclick="showSection('upload')" id="uploadBtn">
+                <i class="fa-solid fa-upload"></i> Upload Students
+            </button>
+            <button onclick="showSection('setTime')" id="setTimeBtn">
+                <i class="fa-solid fa-calendar-days"></i> Set Time Window
+            </button>
+            <button onclick="showSection('download')" id="downloadBtn">
+                <i class="fa-solid fa-file-arrow-down"></i> Download Report
+            </button>
+            <button onclick="showSection('finalUpload')" id="finalUploadBtn">
+                <i class="fa-solid fa-file-upload"></i> Upload Final Allotment
+            </button>
+            <button onclick="showSection('wardenManagement')" id="wardenManagementBtn">
+                <i class="fa-solid fa-users-cog"></i> Manage Wardens
+            </button>
+
+            <div class="logout-wrapper">
+                <button onclick="logout()" id="logoutBtn">
+                    <i class="fa fa-sign-out-alt"></i> Logout
+                </button>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <div id="home" class="section active">
+                <h1>Welcome <span id="currentWardenName">Warden</span> 👋</h1>
+                <p>Manage student room allocation, mutual sharing preferences, and final reports all from this panel.</p>
+            </div>
+
+            <div id="upload" class="section">
+                <h1>Upload Allotted Students</h1>
+                <label>Select Excel File (.xlsx):</label>
+                <input type="file" id="studentUploadFile" accept=".xlsx" />
+                <button class="submit-btn" id="uploadStudentsBtn">Upload</button>
+                <button class="submit-btn" id="downloadTemplateBtn" type="button">Download Students List</button>
+                <div id="uploadSpinner" style="display:none;text-align:center;margin:10px 0;">
+                    <i class="fa fa-spinner fa-spin" style="font-size:2rem;color:#1a73e8;"></i>
+                    <div style="margin-top:5px;">Uploading...</div>
+                </div>
+                <div id="uploadResult"></div>
+            </div>
+
+            <div id="setTime" class="section">
+                <h1>Set Mutual Choice Filling Period</h1>
+                <label>Start Date & Time:</label>
+                <input type="datetime-local" id="windowStart" />
+                <label>End Date & Time:</label>
+                <input type="datetime-local" id="windowEnd" />
+                <button class="submit-btn" id="setTimeWindowBtn">Save Time Window</button>
+                <div id="setTimeResult"></div>
+            </div>
+
+            <div id="download" class="section">
+                <h1>Download Mutual Sharing Report</h1>
+                <p>Generate and download a comprehensive report of all mutual roommate preferences with color-coded groups.</p>
+                <button class="submit-btn" id="downloadReportBtn" onclick="downloadReport()">
+                    <i class="fa-solid fa-download"></i> Download Report
+                </button>
+                <div id="downloadSpinner" style="display:none;text-align:center;margin:10px 0;">
+                    <i class="fa fa-spinner fa-spin" style="font-size:2rem;color:#1a73e8;"></i>
+                    <div style="margin-top:5px;">Generating Report...</div>
+                </div>
+                <div id="downloadResult"></div>
+            </div>
+
+            <div id="finalUpload" class="section">
+                <h1>Upload Final Room Allotment</h1>
+                <label>Final Excel File (.xlsx):</label>
+                <input type="file" id="finalAllotmentFile" accept=".xlsx" />
+                <button class="submit-btn" id="finalAllotmentUploadBtn">Upload</button>
+                <button class="submit-btn" id="deleteAllAllotmentsBtn" style="background: #dc3545; margin-left: 10px;" onclick="deleteAllAllotments()">
+                    <i class="fa-solid fa-trash"></i> Delete All Allocated Rooms
+                </button>
+                <div id="finalUploadSpinner" style="display:none;text-align:center;margin:10px 0;">
+                    <i class="fa fa-spinner fa-spin" style="font-size:2rem;color:#1a73e8;"></i>
+                    <div style="margin-top:5px;">Uploading...</div>
+                </div>
+                <div id="finalUploadResult"></div>
+            </div>
+
+            <div id="wardenManagement" class="section">
+                <h1>Manage Wardens & Supervisors</h1>
+                <p>Add, edit, or remove wardens and supervisors from the system.</p>
+                
+                <div id="addWardenForm">
+                    <h3>Add New Warden/Supervisor</h3>
+                    <label>Name:</label>
+                    <input type="text" id="newWardenName" placeholder="Enter full name" />
+                    <label>Email:</label>
+                    <input type="email" id="newWardenEmail" placeholder="Enter email address" />
+                    <label>Password:</label>
+                    <input type="password" id="newWardenPassword" placeholder="Enter password" />
+                    <button class="submit-btn" onclick="addNewWarden()">Add Warden</button>
+                </div>
+
+                <div id="wardensList">
+                    <h3>Current Wardens & Supervisors</h3>
+                    <div id="wardensContainer">
+                        <!-- Wardens will be loaded here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../js/warden.js"></script>
+    <script>
+        // Check authentication on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            if (!wardenManager.isAuthenticated()) {
+                window.location.href = '../warden_login.html';
+                return;
+            }
+
+            // Load current warden info
+            const currentWarden = wardenManager.getCurrentWarden();
+            if (currentWarden) {
+                document.getElementById('currentWardenName').textContent = currentWarden.name || 'Warden';
+                document.getElementById('wardenName').textContent = currentWarden.name || 'Warden Dashboard';
+            }
+
+            // Load wardens list
+            loadWardensList();
+        });
+
+        function showSection(id) {
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            document.querySelectorAll('.sidebar button').forEach(btn => btn.classList.remove('active'));
+            const activeBtn = document.getElementById(id + 'Btn');
+            if (activeBtn) activeBtn.classList.add('active');
+        }
+
+        function logout() {
+            wardenManager.logout();
+        }
+
+        async function loadWardensList() {
+            const result = await wardenManager.getAllWardens();
+            if (result.success) {
+                displayWardens(result.data.wardens);
+            } else {
+                showMessage(result.message, 'error');
+            }
+        }
+
+        function displayWardens(wardens) {
+            const container = document.getElementById('wardensContainer');
+            container.innerHTML = '';
+
+            wardens.forEach(warden => {
+                const wardenCard = document.createElement('div');
+                wardenCard.className = 'warden-card';
+                wardenCard.innerHTML = `
+                    <h3>${warden.name}</h3>
+                    <p><strong>Email:</strong> ${warden.email}</p>
+                    <p><strong>ID:</strong> ${warden._id}</p>
+                    <div class="action-buttons">
+                        <button class="btn-edit" onclick="editWarden('${warden._id}')">
+                            <i class="fa-solid fa-edit"></i> Edit
+                        </button>
+                        <button class="btn-delete" onclick="deleteWarden('${warden._id}')">
+                            <i class="fa-solid fa-trash"></i> Delete
+                        </button>
+                    </div>
+                `;
+                container.appendChild(wardenCard);
+            });
+        }
+
+        async function addNewWarden() {
+            const name = document.getElementById('newWardenName').value.trim();
+            const email = document.getElementById('newWardenEmail').value.trim();
+            const password = document.getElementById('newWardenPassword').value.trim();
+
+            if (!name || !email || !password) {
+                showMessage('Please fill in all fields.', 'error');
+                return;
+            }
+
+            if (!isValidEmail(email)) {
+                showMessage('Please enter a valid email address.', 'error');
+                return;
+            }
+
+            const result = await wardenManager.addNewWarden({ name, email, password });
+            if (result.success) {
+                showMessage('Warden added successfully!', 'success');
+                // Clear form
+                document.getElementById('newWardenName').value = '';
+                document.getElementById('newWardenEmail').value = '';
+                document.getElementById('newWardenPassword').value = '';
+                // Reload wardens list
+                loadWardensList();
+            } else {
+                showMessage(result.message, 'error');
+            }
+        }
+
+        async function deleteWarden(wardenId) {
+            if (!confirm('Are you sure you want to delete this warden?')) {
+                return;
+            }
+
+            const result = await wardenManager.deleteWarden(wardenId);
+            if (result.success) {
+                showMessage('Warden deleted successfully!', 'success');
+                loadWardensList();
+            } else {
+                showMessage(result.message, 'error');
+            }
+        }
+
+        function editWarden(wardenId) {
+            // TODO: Implement edit functionality
+            alert('Edit functionality will be implemented soon!');
+        }
+
+        function showMessage(message, type = 'info') {
+            // Remove existing messages
+            const existingMessage = document.querySelector('.message');
+            if (existingMessage) {
+                existingMessage.remove();
+            }
+
+            // Create new message element
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${type}`;
+            messageDiv.textContent = message;
+
+            // Insert message at the top of main content
+            const mainContent = document.querySelector('.main-content');
+            mainContent.insertBefore(messageDiv, mainContent.firstChild);
+
+            // Auto-remove message after 5 seconds
+            setTimeout(() => {
+                if (messageDiv.parentNode) {
+                    messageDiv.remove();
+                }
+            }, 5000);
+        }
+
+        function isValidEmail(email) {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return emailRegex.test(email);
+        }
+
+        async function downloadReport() {
+            const downloadBtn = document.getElementById('downloadReportBtn');
+            const downloadSpinner = document.getElementById('downloadSpinner');
+            const downloadResult = document.getElementById('downloadResult');
+
+            // Show loading state
+            downloadBtn.disabled = true;
+            downloadBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Generating...';
+            downloadSpinner.style.display = 'block';
+            downloadResult.innerHTML = '';
+
+            try {
+                const result = await wardenManager.downloadReport();
+                
+                if (result.success) {
+                    showMessage('Report downloaded successfully!', 'success');
+                } else {
+                    showMessage(result.message, 'error');
+                }
+            } catch (error) {
+                showMessage('An unexpected error occurred while downloading the report.', 'error');
+            } finally {
+                // Reset button state
+                downloadBtn.disabled = false;
+                downloadBtn.innerHTML = '<i class="fa-solid fa-download"></i> Download Report';
+                downloadSpinner.style.display = 'none';
+            }
+        }
+
+        async function deleteAllAllotments() {
+            if (!confirm('Are you sure you want to delete all allocated rooms?')) {
+                return;
+            }
+
+            const result = await wardenManager.deleteAllAllotments();
+            if (result.success) {
+                showMessage('All allocated rooms deleted successfully!', 'success');
+            } else {
+                showMessage(result.message, 'error');
+            }
+        }
+    </script>
+
+</body>
+
+</html>

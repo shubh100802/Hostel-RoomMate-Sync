@@ -1,0 +1,195 @@
+/* Reset */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Segoe UI', Roboto, sans-serif;
+}
+
+/* Global body style */
+body {
+  background-color: #f9f9f9;
+  color: #333;
+}
+
+/* Header */
+header {
+  background-color: #007bff;
+  padding: 20px 0;
+  text-align: center;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+header h1 {
+  color: white;
+  font-size: 1.8rem;
+  font-weight: bold;
+}
+
+/* Landing page main section */
+.main-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: calc(100vh - 80px); 
+  text-align: center;
+}
+
+.main-box h2 {
+  font-size: 1.6rem;
+  margin-bottom: 30px;
+}
+
+.main-box p {
+  font-size: 1rem;
+  color: #555;
+  margin-top: 5px;
+  margin-bottom: 15px;
+  line-height: 1.6;
+  max-width: 500px;
+  text-align: center;
+}
+
+
+/* Button Group */
+.btn-group {
+  display: flex;
+  gap: 20px;
+}
+
+.btn {
+  background-color: #007bff;
+  color: white;
+  padding: 12px 25px;
+  border-radius: 8px;
+  text-decoration: none;
+  font-size: 1rem;
+  font-weight: 500;
+  transition: 0.3s;
+}
+
+.btn i {
+  margin-right: 8px;
+}
+
+.btn:hover {
+  background-color: #0056b3;
+}
+
+/* Login container */
+.login-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: calc(100vh - 80px);
+  padding: 20px;
+}
+
+/* Login card */
+form {
+  background-color: white;
+  padding: 40px;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+  width: 100%;
+  max-width: 400px;
+}
+
+form h2 {
+  text-align: center;
+  margin-bottom: 25px;
+  color: #222;
+}
+
+form input {
+  width: 100%;
+  padding: 14px;
+  margin-bottom: 20px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 1rem;
+}
+
+form input:focus {
+  border-color: #007bff;
+  outline: none;
+  box-shadow: 0 0 6px rgba(0, 123, 255, 0.2);
+}
+
+form button {
+  width: 100%;
+  padding: 14px;
+  background: linear-gradient(45deg, #007bff, #00bfff);
+  color: white;
+  font-size: 1rem;
+  font-weight: bold;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+form button i {
+  margin-right: 8px;
+}
+
+form button:hover {
+  background: linear-gradient(45deg, #0056b3, #0077cc);
+}
+
+/* Responsive */
+@media (max-width: 500px) {
+  form {
+    padding: 30px 20px;
+  }
+
+  .btn-group {
+    flex-direction: column;
+    gap: 15px;
+  }
+}
+
+/* Password field with eye */
+.password-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.password-wrapper input {
+  width: 100%;
+  padding-right: 45px;
+}
+
+.password-wrapper .toggle-eye {
+  position: absolute;
+  top: 50%;
+  right: 15px;
+  transform: translateY(-50%);
+  color: #888;
+  cursor: pointer;
+}
+
+footer {
+  width: 100%;
+  padding: 15px 0;
+  background-color:#007bff;
+  text-align: center;
+  font-size: 0.95rem;
+  color: #333;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  border-top: 1px solid #ddd;
+}
+
+footer a {
+  color: #e1306c;
+  text-decoration: none;
+  margin-left: 8px;
+  font-size: 1.2rem;
+}
+
+footer a:hover {
+  color: #c82361;
+}

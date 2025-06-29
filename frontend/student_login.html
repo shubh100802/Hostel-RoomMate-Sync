@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Student Login</title>
+  <link rel="stylesheet" href="css/styles.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+</head>
+
+<body>
+
+  <header>
+    <h1>VIT Bhopal</h1>
+  </header>
+
+  <main class="login-container">
+    <form onsubmit="handleStudentLogin(event)">
+      <h2>Student Login</h2>
+      <input type="email" id="email" placeholder="Enter Email" required />
+      <div class="password-wrapper">
+        <input type="password" id="password" placeholder="Enter Registration No." required />
+        <i class="fa-solid fa-eye toggle-eye" onclick="togglePassword('password', this)"></i>
+      </div>
+      <button id="studentLoginBtn" type="submit"><i class="fa-solid fa-right-to-bracket"></i> Login</button>
+    </form>
+  </main>
+
+  <script src="js/auth.js"></script>
+  <script>
+    function handleStudentLogin(event) {
+      event.preventDefault();
+      loginUser("student");
+    }
+  </script>
+
+</body>
+
+<script>
+function togglePassword(inputId, iconEl) {
+  const input = document.getElementById(inputId);
+  if (!input) return; 
+
+  if (input.type === "password") {
+    input.type = "text";
+    iconEl.classList.remove("fa-eye");
+    iconEl.classList.add("fa-eye-slash");
+  } else {
+    input.type = "password";
+    iconEl.classList.remove("fa-eye-slash");
+    iconEl.classList.add("fa-eye");
+  }
+}
+</script>
+
+</html>
