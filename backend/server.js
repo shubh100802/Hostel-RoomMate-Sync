@@ -8,6 +8,7 @@ const authRoutes = require("./routes/authRoutes");
 const wardenRoutes = require("./routes/wardenRoutes");
 const studentRoutes = require("./routes/studentRoutes");
 const cors = require("cors");
+const path = require("path");
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -20,6 +21,12 @@ app.use(express.json());
 app.use("/api/auth", authRoutes);
 app.use("/api/warden", wardenRoutes);
 app.use("/api/students", studentRoutes);
+
+// ============ SERVE FRONTEND STATIC FILES ============
+app.use(express.static(path.join(__dirname, "../frontend")));
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, "../frontend/index.html"));
+});
 
 // ============ SERVER STARTUP ============
 connectDB();
