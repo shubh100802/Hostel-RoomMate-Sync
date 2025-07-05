@@ -346,7 +346,7 @@ if (typeof window !== 'undefined') {
                 const formData = new FormData();
                 formData.append('file', fileInput.files[0]);
                 try {
-                    const response = await fetch('http://localhost:5000/api/students/upload', {
+                    const response = await fetch(this.apiBaseUrl + '/students/upload', {
                         method: 'POST',
                         headers: {
                             'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -403,7 +403,7 @@ function showDeleteAllStudentsBtn(show) {
             btn.addEventListener('click', async function() {
                 if (!confirm('Are you sure you want to delete ALL students? This action cannot be undone.')) return;
                 try {
-                    const response = await fetch('http://localhost:5000/api/students/delete-all', {
+                    const response = await fetch(this.apiBaseUrl + '/students/delete-all', {
                         method: 'DELETE',
                         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
                     });
@@ -438,7 +438,7 @@ function showDeleteAllStudentsBtn(show) {
             prefBtn.addEventListener('click', async function() {
                 if (!confirm('Are you sure you want to delete ALL mutual preferences and reset all students? This action cannot be undone.')) return;
                 try {
-                    const response = await fetch('http://localhost:5000/api/students/delete-all-preferences', {
+                    const response = await fetch(this.apiBaseUrl + '/students/delete-all-preferences', {
                         method: 'DELETE',
                         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
                     });
@@ -484,7 +484,7 @@ if (typeof window !== 'undefined') {
                     resultDiv.innerHTML = '<div class="message error">Please select both start and end date/time.</div>';
                     return;
                 }
-                fetch('http://localhost:5000/api/warden/set-time-window', {
+                fetch(this.apiBaseUrl + '/warden/set-time-window', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -524,7 +524,7 @@ if (finalUploadBtn && finalFileInput) {
         const formData = new FormData();
         formData.append('file', finalFileInput.files[0]);
         try {
-            const response = await fetch('http://localhost:5000/api/students/upload-final-allotment', {
+            const response = await fetch(this.apiBaseUrl + '/students/upload-final-allotment', {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem('token')}`
