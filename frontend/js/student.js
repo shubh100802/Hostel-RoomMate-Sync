@@ -77,7 +77,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!container || !student) return;
     container.innerHTML = '';
 
-    fetch('http://localhost:5000/api/students/has-active-incoming-request', {
+    fetch(apiBaseUrl + '/students/has-active-incoming-request', {
       headers: {
         'Authorization': `Bearer ${localStorage.getItem('token')}`
       }
@@ -88,7 +88,7 @@ document.addEventListener("DOMContentLoaded", () => {
         container.innerHTML = `<h1>Mutual Form Section</h1><p style='color:#ff9800;font-weight:bold;'>You have already been preferred by <b>${activeReq.requester.name}</b> (${activeReq.requester.regno}).<br>Please respond to or decline the request before filling your own preferences.</p>`;
         return;
       }
-      fetch('http://localhost:5000/api/students/get-time-window')
+      fetch(apiBaseUrl + '/students/get-time-window')
         .then(res => res.ok ? res.json() : null)
         .then(data => {
           if (!data || !data.start || !data.end) {
@@ -107,7 +107,7 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
           }
 
-          fetch('http://localhost:5000/api/students/status', {
+          fetch(apiBaseUrl + '/students/status', {
             headers: {
               'Authorization': `Bearer ${localStorage.getItem('token')}`
             }
@@ -174,7 +174,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const regInput = document.getElementById(`reg${i}`);
         preferences.push(regInput ? regInput.value.trim() : "NA");
       }
-      fetch('http://localhost:5000/api/students/mutual-preference', {
+      fetch(apiBaseUrl + '/students/mutual-preference', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -213,7 +213,7 @@ document.addEventListener("DOMContentLoaded", () => {
             nameInput.value = 'NA';
             emailInput.value = 'NA';
           } else if (regno) {
-            fetch(`http://localhost:5000/api/students/by-regno/${regno}?bedType=${encodeURIComponent(student.bedType)}`)
+            fetch(apiBaseUrl + `/students/by-regno/${regno}?bedType=${encodeURIComponent(student.bedType)}`)
               .then(res => res.ok ? res.json() : null)
               .then(data => {
                 if (data && data.name) {
@@ -239,7 +239,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // ============ STUDENT STATUS & DATA LOADING ============
   function loadStudentStatus() {
-    fetch('http://localhost:5000/api/students/status', {
+    fetch(apiBaseUrl + '/students/status', {
       headers: {
         'Authorization': `Bearer ${localStorage.getItem('token')}`
       }
@@ -271,7 +271,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function loadMyRoommateGroup() {
-    fetch('http://localhost:5000/api/students/my-roommate-group', {
+    fetch(apiBaseUrl + '/students/my-roommate-group', {
       headers: {
         'Authorization': `Bearer ${localStorage.getItem('token')}`
       }
@@ -306,7 +306,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // ============ ROOMMATE REQUESTS ============
   function loadRoommateRequests() {
-    fetch('http://localhost:5000/api/students/pending-requests', {
+    fetch(apiBaseUrl + '/students/pending-requests', {
       headers: {
         'Authorization': `Bearer ${localStorage.getItem('token')}`
       }
@@ -371,7 +371,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // ============ REQUEST RESPONSE HANDLERS ============
   window.respondToRequest = function(requestId, response) {
-    fetch(`http://localhost:5000/api/students/respond-to-request/${requestId}`, {
+    fetch(apiBaseUrl + `/students/respond-to-request/${requestId}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -407,7 +407,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const allotmentSection = document.getElementById('allotment');
     if (!allotmentSection) return;
     allotmentSection.innerHTML = '<h1>Final Allotment Section</h1><p>Here you can view your final room allotment.</p>';
-    fetch('http://localhost:5000/api/students/me', {
+    fetch(apiBaseUrl + '/students/me', {
       headers: {
         'Authorization': `Bearer ${localStorage.getItem('token')}`
       }

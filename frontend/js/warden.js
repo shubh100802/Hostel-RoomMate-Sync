@@ -3,7 +3,7 @@
 // ============ WARDEN MANAGEMENT SYSTEM ============
 class WardenManager {
     constructor() {
-        this.apiBaseUrl = 'http://localhost:5000/api';
+        this.apiBaseUrl = window.location.origin + '/api';
         this.token = localStorage.getItem('token');
     }
 
