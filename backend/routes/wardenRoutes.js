@@ -17,6 +17,186 @@ const wardenAuth = (req, res, next) => {
     next();
 };
 
+// ============ REPORT GENERATION ============
+router.get('/download-report', authMiddleware, wardenAuth, async (req, res) => {
+    try {
+        const students = await Student.find({}).populate('committedRoommateRequest');
+        const roommateRequests = await RoommateRequest.find({})
+            .populate('requester')
+            .populate('requestedStudents.student');
+
+        const groups = [];
+        const processedStudents = new Set();
+        const naStudents = [];
+        const notFilledStudents = [];
+
+        // Find mutually matched groups
+        for (const request of roommateRequests) {
+            if (request.status === 'completed') {
+                const groupMembers = [request.requester];
+                for (const requested of request.requestedStudents) {
+                    if (requested.status === 'accepted') {
+                        groupMembers.push(requested.student);
+                        processedStudents.add(requested.student._id.toString());
+                    }
+                }
+                processedStudents.add(request.requester._id.toString());
+                if (groupMembers.length > 1) {
+                    groups.push({
+                        members: groupMembers,
+                        bedType: request.bedType || 'Unknown',
+                        groupId: groups.length + 1
+                    });
+                }
+            }
+        }
+
+        // Categorize remaining students
+        for (const student of students) {
+            const bedType = student.bedType || 'Unknown';
+            if (!processedStudents.has(student._id.toString())) {
+                if (student.hasSubmittedMutualForm) {
+                    if (student.mutualPreferences && student.mutualPreferences.includes('NA')) {
+                        naStudents.push({ ...student.toObject(), bedType });
+                    } else {
+                        naStudents.push({ ...student.toObject(), bedType });
+                    }
+                } else {
+                    notFilledStudents.push({ ...student.toObject(), bedType });
+                }
+            }
+        }
+
+        // Create workbook
+        const workbook = new ExcelJS.Workbook();
+        const worksheet = workbook.addWorksheet('Mutual Sharing Report');
+
+        worksheet.columns = [
+            { header: 'Group ID', key: 'group', width: 15 },
+            { header: 'Name', key: 'name', width: 25 },
+            { header: 'Registration Number', key: 'regno', width: 20 },
+            { header: 'Email', key: 'email', width: 30 },
+            { header: 'Bed Type', key: 'bedType', width: 20 },
+            { header: 'Status', key: 'status', width: 22 },
+            { header: 'Preferences', key: 'preferences', width: 35 }
+        ];
+
+        // Add mutually matched groups
+        for (const group of groups) {
+            for (const member of group.members) {
+                worksheet.addRow({
+                    group: `Group ${group.groupId}`,
+                    name: member.name,
+                    regno: member.regno,
+                    email: member.email,
+                    bedType: member.bedType || group.bedType || 'Unknown',
+                    status: 'Mutually Matched',
+                    preferences: member.mutualPreferences ? member.mutualPreferences.join(', ') : 'N/A'
+                });
+            }
+            worksheet.addRow({});
+        }
+
+        // Add NA students
+        const naByBedType = {};
+        for (const student of naStudents) {
+            const bedType = student.bedType || 'Unknown';
+            if (!naByBedType[bedType]) {
+                naByBedType[bedType] = [];
+            }
+            naByBedType[bedType].push(student);
+        }
+
+        for (const [bedType, students] of Object.entries(naByBedType)) {
+            for (const student of students) {
+                worksheet.addRow({
+                    group: 'NA Group',
+                    name: student.name,
+                    regno: student.regno,
+                    email: student.email,
+                    bedType,
+                    status: 'Random Roommate',
+                    preferences: student.mutualPreferences ? student.mutualPreferences.join(', ') : 'NA'
+                });
+            }
+            worksheet.addRow({});
+        }
+
+        // Add students who haven't filled the form
+        const notFilledByBedType = {};
+        for (const student of notFilledStudents) {
+            const bedType = student.bedType || 'Unknown';
+            if (!notFilledByBedType[bedType]) {
+                notFilledByBedType[bedType] = [];
+            }
+            notFilledByBedType[bedType].push(student);
+        }
+
+        for (const [bedType, students] of Object.entries(notFilledByBedType)) {
+            for (const student of students) {
+                worksheet.addRow({
+                    group: 'Not Filled',
+                    name: student.name,
+                    regno: student.regno,
+                    email: student.email,
+                    bedType,
+                    status: 'Form Not Submitted',
+                    preferences: 'NA'
+                });
+            }
+            worksheet.addRow({});
+        }
+
+        // Style header
+        worksheet.getRow(1).eachCell(cell => {
+            cell.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+            cell.fill = {
+                type: 'pattern',
+                pattern: 'solid',
+                fgColor: { argb: '22223B' }
+            };
+            cell.alignment = { vertical: 'middle', horizontal: 'center' };
+        });
+
+        // Apply colors to rows
+        worksheet.eachRow((row, rowNumber) => {
+            if (rowNumber === 1) return;
+            const groupCell = row.getCell(1).value;
+            let fillColor = null;
+            let fontColor = 'FFFFFFFF';
+            if (!groupCell) return;
+            if (typeof groupCell !== 'string') return;
+            if (groupCell.startsWith('Group')) {
+                const groupId = parseInt(groupCell.split(' ')[1]);
+                fillColor = getGroupColor(groupId);
+            } else if (groupCell === 'NA Group') {
+                fillColor = 'FF6B6B';
+            } else if (groupCell === 'Not Filled') {
+                fillColor = 'FFA500';
+            }
+            if (fillColor) {
+                row.eachCell(cell => {
+                    cell.fill = {
+                        type: 'pattern',
+                        pattern: 'solid',
+                        fgColor: { argb: fillColor }
+                    };
+                    cell.font = { color: { argb: fontColor }, bold: true };
+                });
+            }
+        });
+
+        const buffer = await workbook.xlsx.writeBuffer();
+        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        res.setHeader('Content-Disposition', 'attachment; filename="mutual_sharing_report.xlsx"');
+        res.send(buffer);
+    } catch (error) {
+        console.error('Download report error:', error);
+        if (error && error.stack) console.error(error.stack);
+        res.status(500).json({ msg: 'Server error while generating report', error: error && error.message });
+    }
+});
+
 // ============ WARDEN MANAGEMENT ============
 router.post('/add', authMiddleware, wardenAuth, async (req, res) => {
     try {
@@ -207,185 +387,6 @@ router.get('/get-time-window', async (req, res) => {
         res.json({ start: tw.start, end: tw.end });
     } catch (err) {
         res.status(500).json({ msg: 'Server error' });
-    }
-});
-
-// ============ REPORT GENERATION ============
-router.get('/download-report', authMiddleware, wardenAuth, async (req, res) => {
-    try {
-        const students = await Student.find({}).populate('committedRoommateRequest');
-        const roommateRequests = await RoommateRequest.find({})
-            .populate('requester')
-            .populate('requestedStudents.student');
-
-        const groups = [];
-        const processedStudents = new Set();
-        const naStudents = [];
-        const notFilledStudents = [];
-
-        // Find mutually matched groups
-        for (const request of roommateRequests) {
-            if (request.status === 'completed') {
-                const groupMembers = [request.requester];
-                
-                for (const requested of request.requestedStudents) {
-                    if (requested.status === 'accepted') {
-                        groupMembers.push(requested.student);
-                        processedStudents.add(requested.student._id.toString());
-                    }
-                }
-                
-                processedStudents.add(request.requester._id.toString());
-                
-                if (groupMembers.length > 1) {
-                    groups.push({
-                        members: groupMembers,
-                        bedType: request.bedType,
-                        groupId: groups.length + 1
-                    });
-                }
-            }
-        }
-
-        // Categorize remaining students
-        for (const student of students) {
-            if (!processedStudents.has(student._id.toString())) {
-                if (student.hasSubmittedMutualForm) {
-                    if (student.mutualPreferences && student.mutualPreferences.includes('NA')) {
-                        naStudents.push(student);
-                    } else {
-                        naStudents.push(student);
-                    }
-                } else {
-                    notFilledStudents.push(student);
-                }
-            }
-        }
-
-        // Create workbook
-        const workbook = new ExcelJS.Workbook();
-        const worksheet = workbook.addWorksheet('Mutual Sharing Report');
-
-        worksheet.columns = [
-            { header: 'Group ID', key: 'group', width: 15 },
-            { header: 'Name', key: 'name', width: 25 },
-            { header: 'Registration Number', key: 'regno', width: 20 },
-            { header: 'Email', key: 'email', width: 30 },
-            { header: 'Bed Type', key: 'bedType', width: 20 },
-            { header: 'Status', key: 'status', width: 22 },
-            { header: 'Preferences', key: 'preferences', width: 35 }
-        ];
-
-        // Add mutually matched groups
-        for (const group of groups) {
-            for (const member of group.members) {
-                worksheet.addRow({
-                    group: `Group ${group.groupId}`,
-                    name: member.name,
-                    regno: member.regno,
-                    email: member.email,
-                    bedType: group.bedType,
-                    status: 'Mutually Matched',
-                    preferences: member.mutualPreferences ? member.mutualPreferences.join(', ') : 'N/A'
-                });
-            }
-            worksheet.addRow({});
-        }
-
-        // Add NA students
-        const naByBedType = {};
-        for (const student of naStudents) {
-            if (!naByBedType[student.bedType]) {
-                naByBedType[student.bedType] = [];
-            }
-            naByBedType[student.bedType].push(student);
-        }
-
-        for (const [bedType, students] of Object.entries(naByBedType)) {
-            for (const student of students) {
-                worksheet.addRow({
-                    group: 'NA Group',
-                    name: student.name,
-                    regno: student.regno,
-                    email: student.email,
-                    bedType,
-                    status: 'Random Roommate',
-                    preferences: student.mutualPreferences ? student.mutualPreferences.join(', ') : 'NA'
-                });
-            }
-            worksheet.addRow({});
-        }
-
-        // Add students who haven't filled the form
-        const notFilledByBedType = {};
-        for (const student of notFilledStudents) {
-            if (!notFilledByBedType[student.bedType]) {
-                notFilledByBedType[student.bedType] = [];
-            }
-            notFilledByBedType[student.bedType].push(student);
-        }
-
-        for (const [bedType, students] of Object.entries(notFilledByBedType)) {
-            for (const student of students) {
-                worksheet.addRow({
-                    group: 'Not Filled',
-                    name: student.name,
-                    regno: student.regno,
-                    email: student.email,
-                    bedType,
-                    status: 'Form Not Submitted',
-                    preferences: 'NA'
-                });
-            }
-            worksheet.addRow({});
-        }
-
-        // Style header
-        worksheet.getRow(1).eachCell(cell => {
-            cell.font = { bold: true, color: { argb: 'FFFFFFFF' } };
-            cell.fill = {
-                type: 'pattern',
-                pattern: 'solid',
-                fgColor: { argb: '22223B' }
-            };
-            cell.alignment = { vertical: 'middle', horizontal: 'center' };
-        });
-
-        // Apply colors to rows
-        worksheet.eachRow((row, rowNumber) => {
-            if (rowNumber === 1) return;
-            const groupCell = row.getCell(1).value;
-            let fillColor = null;
-            let fontColor = 'FFFFFFFF';
-            if (!groupCell) return;
-            if (typeof groupCell !== 'string') return;
-            if (groupCell.startsWith('Group')) {
-                const groupId = parseInt(groupCell.split(' ')[1]);
-                fillColor = getGroupColor(groupId);
-            } else if (groupCell === 'NA Group') {
-                fillColor = 'FF6B6B';
-            } else if (groupCell === 'Not Filled') {
-                fillColor = 'FFA500';
-            }
-            if (fillColor) {
-                row.eachCell(cell => {
-                    cell.fill = {
-                        type: 'pattern',
-                        pattern: 'solid',
-                        fgColor: { argb: fillColor }
-                    };
-                    cell.font = { color: { argb: fontColor }, bold: true };
-                });
-            }
-        });
-
-        const buffer = await workbook.xlsx.writeBuffer();
-        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-        res.setHeader('Content-Disposition', 'attachment; filename="mutual_sharing_report.xlsx"');
-        res.send(buffer);
-    } catch (error) {
-        console.error('Download report error:', error);
-        res.status(500).json({ msg: 'Server error while generating report' });
     }
 });
 

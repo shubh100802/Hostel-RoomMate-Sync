@@ -94,8 +94,7 @@ mutual-hostel-room-manager/
 │   ├── js/
 │   │   ├── auth.js              # Authentication logic
 │   │   ├── student.js           # Student dashboard logic
-│   │   ├── warden.js            # Warden dashboard logic
-│   │   └── utils.js             # Utility functions
+│   │   └── warden.js            # Warden dashboard logic
 │   ├── student/
 │   │   └── Student_dashboard.html
 │   ├── warden/
@@ -103,9 +102,6 @@ mutual-hostel-room-manager/
 │   ├── index.html               # Landing page
 │   ├── student_login.html       # Student login
 │   └── warden_login.html        # Warden login
-└── scripts/
-    ├── generate_real_excel_templates.js
-    └── generate_sample_final_allotment.js
 ```
 
 ## 🔐 Authentication

@@ -209,7 +209,10 @@ document.addEventListener("DOMContentLoaded", () => {
       if (regInput && nameInput && emailInput) {
         regInput.addEventListener('input', function() {
           const regno = this.value.trim();
-          if (regno && regno.toUpperCase() !== 'NA') {
+          if (regno && regno.toUpperCase() === 'NA') {
+            nameInput.value = 'NA';
+            emailInput.value = 'NA';
+          } else if (regno) {
             fetch(`http://localhost:5000/api/students/by-regno/${regno}?bedType=${encodeURIComponent(student.bedType)}`)
               .then(res => res.ok ? res.json() : null)
               .then(data => {
@@ -217,13 +220,13 @@ document.addEventListener("DOMContentLoaded", () => {
                   nameInput.value = data.name;
                   emailInput.value = data.email;
                 } else {
-                  nameInput.value = '';
-                  emailInput.value = '';
+                  nameInput.value = 'NA';
+                  emailInput.value = 'NA';
                 }
               })
               .catch(() => {
-                nameInput.value = '';
-                emailInput.value = '';
+                nameInput.value = 'NA';
+                emailInput.value = 'NA';
               });
           } else {
             nameInput.value = '';
@@ -343,7 +346,7 @@ document.addEventListener("DOMContentLoaded", () => {
               <div class="requester-name">${request.requester.name}</div>
               <div class="requester-details">
                 Reg No: ${request.requester.regno} | Email: ${request.requester.email}<br>
-                Bed Type: ${request.requester.bedType}<br>
+                Bed Type: ${request.bedType}<br>
                 Requested on: ${new Date(request.createdAt).toLocaleString()}
               </div>
               <div style="margin-top:10px;"><b>Full Group:</b>${groupHtml}</div>
@@ -465,4 +468,47 @@ document.addEventListener("DOMContentLoaded", () => {
       loadFinalAllotment();
     }
   });
+
+  // ============ INACTIVITY AUTO-LOGOUT ============
+  let inactivityTimer;
+  function resetInactivityTimer() {
+    clearTimeout(inactivityTimer);
+    inactivityTimer = setTimeout(() => {
+      localStorage.setItem('logoutReason', 'inactive');
+      studentLogout();
+    }, 5 * 60 * 1000); // 5 minutes
+  }
+  ['click','mousemove','keydown','scroll','touchstart'].forEach(evt => {
+    window.addEventListener(evt, resetInactivityTimer, true);
+  });
+  resetInactivityTimer();
+
+  // ============ PREVENT DASHBOARD ACCESS AFTER LOGOUT ============
+  function checkStudentAuthOnLoad() {
+    const token = localStorage.getItem('token');
+    const role = localStorage.getItem('role');
+    if (!token || role !== 'student') {
+      window.location.replace('../student_login.html');
+    }
+    // If redirected due to inactivity, show message
+    if (localStorage.getItem('logoutReason') === 'inactive') {
+      alert('You have been logged out due to inactivity.');
+      localStorage.removeItem('logoutReason');
+    }
+  }
+  if (window.location.pathname.includes('Student_dashboard.html')) {
+    checkStudentAuthOnLoad();
+  }
+
+  // Patch logout to prevent back navigation
+  function studentLogout() {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    localStorage.removeItem('role');
+    localStorage.removeItem('logoutReason');
+    window.location.replace('../student_login.html');
+    setTimeout(() => {
+      window.history.replaceState({}, document.title, '../student_login.html');
+    }, 100);
+  }
 });

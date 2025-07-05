@@ -16,37 +16,45 @@ const upload = multer({ storage });
 
 // ============ STUDENT UPLOAD (WARDEN ONLY) ============
 router.post('/upload', authMiddleware, upload.single('file'), async (req, res) => {
+    console.log('Student upload route hit');
     if (!req.file) {
+        console.log('No file uploaded');
         return res.status(400).json({ msg: 'No file uploaded' });
     }
     try {
         const workbook = xlsx.read(req.file.buffer, { type: 'buffer' });
         const sheetName = workbook.SheetNames[0];
         const sheet = workbook.Sheets[sheetName];
-        const students = xlsx.utils.sheet_to_json(sheet, { header: ['name', 'email', 'regno', 'bedType'], range: 1 });
-
+        const raw = xlsx.utils.sheet_to_json(sheet, { defval: '' });
+        console.log('Parsed rows from Excel:', raw.length, raw);
         let added = 0, skipped = 0, errors = [];
-        for (const s of students) {
-            if (!s.name || !s.email || !s.regno || !s.bedType) {
+        for (const [i, row] of raw.entries()) {
+            const name = row.name || row.Name || row.NAME || row["Name "] || '';
+            const email = row.email || row.Email || row.EMAIL || row["Email "] || '';
+            const regno = row.regno || row.RegNo || row["Reg No"] || row["RegNo"] || row["reg no"] || '';
+            const bedType = row.bedType || row.BedType || row["Bed Type"] || row["bed type"] || '';
+            if (!name || !email || !regno || !bedType) {
                 skipped++;
-                errors.push(`Missing data for row: ${JSON.stringify(s)}`);
+                errors.push(`Row ${i+2}: Missing data. name='${name}', email='${email}', regno='${regno}', bedType='${bedType}'`);
                 continue;
             }
-            const exists = await Student.findOne({ $or: [{ email: s.email }, { regno: s.regno }] });
+            const exists = await Student.findOne({ $or: [{ email }, { regno }] });
             if (exists) {
                 skipped++;
+                errors.push(`Row ${i+2}: Student already exists (email/regno)`);
                 continue;
             }
-            const hashedPassword = await bcrypt.hash(s.regno, 10);
+            const hashedPassword = await bcrypt.hash(regno, 10);
             await Student.create({
-                name: s.name,
-                email: s.email,
-                regno: s.regno,
-                bedType: s.bedType,
+                name,
+                email,
+                regno,
+                bedType,
                 password: hashedPassword
             });
             added++;
         }
+        console.log(`Student upload finished: added=${added}, skipped=${skipped}, errors=`, errors);
         res.json({ success: true, msg: `Added ${added} students, skipped ${skipped}.`, errors });
     } catch (err) {
         console.error('Student upload error:', err);

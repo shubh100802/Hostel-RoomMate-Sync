@@ -50,7 +50,11 @@ class WardenManager {
         localStorage.removeItem('token');
         localStorage.removeItem('user');
         localStorage.removeItem('role');
-        window.location.href = '../index.html';
+        localStorage.removeItem('logoutReason');
+        window.location.replace('../index.html');
+        setTimeout(() => {
+            window.history.replaceState({}, document.title, '../index.html');
+        }, 100);
     }
 
     getCurrentWarden() {
@@ -539,4 +543,35 @@ if (finalUploadBtn && finalFileInput) {
             finalUploadResult.innerHTML = `<div class="message error">Server error. Try again.</div>`;
         }
     });
+}
+
+// ============ INACTIVITY AUTO-LOGOUT ============
+let inactivityTimer;
+function resetInactivityTimer() {
+    clearTimeout(inactivityTimer);
+    inactivityTimer = setTimeout(() => {
+        localStorage.setItem('logoutReason', 'inactive');
+        wardenManager.logout();
+    }, 5 * 60 * 1000); // 5 minutes
+}
+['click','mousemove','keydown','scroll','touchstart'].forEach(evt => {
+    window.addEventListener(evt, resetInactivityTimer, true);
+});
+resetInactivityTimer();
+
+// ============ PREVENT DASHBOARD ACCESS AFTER LOGOUT ============
+function checkWardenAuthOnLoad() {
+    const token = localStorage.getItem('token');
+    const role = localStorage.getItem('role');
+    if (!token || role !== 'warden') {
+        window.location.replace('../index.html');
+    }
+    // If redirected due to inactivity, show message
+    if (localStorage.getItem('logoutReason') === 'inactive') {
+        alert('You have been logged out due to inactivity.');
+        localStorage.removeItem('logoutReason');
+    }
+}
+if (window.location.pathname.includes('Warden_dashboard.html')) {
+    checkWardenAuthOnLoad();
 }

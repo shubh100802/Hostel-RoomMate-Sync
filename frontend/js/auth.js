@@ -38,11 +38,12 @@ async function loginUser(role) {
       localStorage.setItem("token", data.token);
       localStorage.setItem("user", JSON.stringify(data.user));
       localStorage.setItem("role", role);
+      localStorage.removeItem("logoutReason");
 
       if (role === "student") {
-        window.location.href = "/frontend/student/Student_dashboard.html";
+        window.location.href = "student/Student_dashboard.html";
       } else {
-        window.location.href = "/frontend/warden/Warden_dashboard.html";
+        window.location.href = "warden/Warden_dashboard.html";
       }
     } else {
       alert(data.msg || "Login failed.");
