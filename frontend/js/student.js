@@ -102,7 +102,7 @@ document.addEventListener("DOMContentLoaded", () => {
           const start = new Date(data.start);
           const end = new Date(data.end);
           if (now < start) {
-            container.innerHTML = `<h1>Mutual Form Section</h1><p>Mutual choice filling will open on <b>${start.toLocaleString()}</b>.</p>`;
+            container.innerHTML = `<h1>Mutual Form Section</h1><p>Mutual choice filling will open on <b>${start.toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })}</b>.</p>`;
             return;
           }
           if (now > end) {

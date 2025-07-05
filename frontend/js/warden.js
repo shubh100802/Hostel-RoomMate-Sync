@@ -480,12 +480,15 @@ if (typeof window !== 'undefined') {
         const resultDiv = document.getElementById('setTimeResult');
         if (setBtn && startInput && endInput) {
             setBtn.addEventListener('click', function() {
-                const start = startInput.value;
-                const end = endInput.value;
+                let start = startInput.value;
+                let end = endInput.value;
                 if (!start || !end) {
                     resultDiv.innerHTML = '<div class="message error">Please select both start and end date/time.</div>';
                     return;
                 }
+                // Convert to UTC ISO string
+                start = new Date(start).toISOString();
+                end = new Date(end).toISOString();
                 fetch(apiBaseUrl + '/warden/set-time-window', {
                     method: 'POST',
                     headers: {
