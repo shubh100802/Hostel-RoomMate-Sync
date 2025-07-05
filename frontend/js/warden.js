@@ -3,14 +3,14 @@
 // ============ WARDEN MANAGEMENT SYSTEM ============
 class WardenManager {
     constructor() {
-        this.apiBaseUrl = window.location.origin + '/api';
+        const apiBaseUrl = window.location.origin + '/api';
         this.token = localStorage.getItem('token');
     }
 
     // ============ AUTHENTICATION ============
     async loginWarden(email, password) {
         try {
-            const response = await fetch(`${this.apiBaseUrl}/auth/login`, {
+            const response = await fetch(`${apiBaseUrl}/auth/login`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -65,7 +65,7 @@ class WardenManager {
     // ============ WARDEN MANAGEMENT ============
     async addNewWarden(wardenData) {
         try {
-            const response = await fetch(`${this.apiBaseUrl}/warden/add`, {
+            const response = await fetch(`${apiBaseUrl}/warden/add`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -89,7 +89,7 @@ class WardenManager {
 
     async getAllWardens() {
         try {
-            const response = await fetch(`${this.apiBaseUrl}/warden/all`, {
+            const response = await fetch(`${apiBaseUrl}/warden/all`, {
                 method: 'GET',
                 headers: {
                     'Authorization': `Bearer ${this.token}`
@@ -111,7 +111,7 @@ class WardenManager {
 
     async updateWarden(wardenId, updateData) {
         try {
-            const response = await fetch(`${this.apiBaseUrl}/warden/${wardenId}`, {
+            const response = await fetch(`${apiBaseUrl}/warden/${wardenId}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -135,7 +135,7 @@ class WardenManager {
 
     async deleteWarden(wardenId) {
         try {
-            const response = await fetch(`${this.apiBaseUrl}/warden/${wardenId}`, {
+            const response = await fetch(`${apiBaseUrl}/warden/${wardenId}`, {
                 method: 'DELETE',
                 headers: {
                     'Authorization': `Bearer ${this.token}`
@@ -158,7 +158,7 @@ class WardenManager {
     // ============ REPORT GENERATION ============
     async downloadReport() {
         try {
-            const response = await fetch(`${this.apiBaseUrl}/warden/download-report`, {
+            const response = await fetch(`${apiBaseUrl}/warden/download-report`, {
                 method: 'GET',
                 headers: {
                     'Authorization': `Bearer ${this.token}`
@@ -193,7 +193,7 @@ class WardenManager {
     // ============ ROOM ALLOCATION MANAGEMENT ============
     async deleteAllAllotments() {
         try {
-            const response = await fetch(`${this.apiBaseUrl}/students/delete-all-allocations`, {
+            const response = await fetch(`${apiBaseUrl}/students/delete-all-allocations`, {
                 method: 'DELETE',
                 headers: {
                     'Authorization': `Bearer ${this.token}`
@@ -346,7 +346,7 @@ if (typeof window !== 'undefined') {
                 const formData = new FormData();
                 formData.append('file', fileInput.files[0]);
                 try {
-                    const response = await fetch(this.apiBaseUrl + '/students/upload', {
+                    const response = await fetch(apiBaseUrl + '/students/upload', {
                         method: 'POST',
                         headers: {
                             'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -403,7 +403,7 @@ function showDeleteAllStudentsBtn(show) {
             btn.addEventListener('click', async function() {
                 if (!confirm('Are you sure you want to delete ALL students? This action cannot be undone.')) return;
                 try {
-                    const response = await fetch(this.apiBaseUrl + '/students/delete-all', {
+                    const response = await fetch(apiBaseUrl + '/students/delete-all', {
                         method: 'DELETE',
                         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
                     });
@@ -438,7 +438,7 @@ function showDeleteAllStudentsBtn(show) {
             prefBtn.addEventListener('click', async function() {
                 if (!confirm('Are you sure you want to delete ALL mutual preferences and reset all students? This action cannot be undone.')) return;
                 try {
-                    const response = await fetch(this.apiBaseUrl + '/students/delete-all-preferences', {
+                    const response = await fetch(apiBaseUrl + '/students/delete-all-preferences', {
                         method: 'DELETE',
                         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
                     });
@@ -484,7 +484,7 @@ if (typeof window !== 'undefined') {
                     resultDiv.innerHTML = '<div class="message error">Please select both start and end date/time.</div>';
                     return;
                 }
-                fetch(this.apiBaseUrl + '/warden/set-time-window', {
+                fetch(apiBaseUrl + '/warden/set-time-window', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -524,7 +524,7 @@ if (finalUploadBtn && finalFileInput) {
         const formData = new FormData();
         formData.append('file', finalFileInput.files[0]);
         try {
-            const response = await fetch(this.apiBaseUrl + '/students/upload-final-allotment', {
+            const response = await fetch(apiBaseUrl + '/students/upload-final-allotment', {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem('token')}`
