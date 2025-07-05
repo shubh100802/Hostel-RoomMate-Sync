@@ -1,9 +1,11 @@
 // frontend/js/warden.js
 
+// Add this at the very top of the file
+const apiBaseUrl = window.location.origin + '/api';
+
 // ============ WARDEN MANAGEMENT SYSTEM ============
 class WardenManager {
     constructor() {
-        const apiBaseUrl = window.location.origin + '/api';
         this.token = localStorage.getItem('token');
     }
 

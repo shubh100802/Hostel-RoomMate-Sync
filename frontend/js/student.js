@@ -1,3 +1,6 @@
+// Add this at the very top of the file
+const apiBaseUrl = window.location.origin + '/api';
+
 // ============ STUDENT DASHBOARD SYSTEM ============
 document.addEventListener("DOMContentLoaded", () => {
   // ============ INITIALIZATION ============
