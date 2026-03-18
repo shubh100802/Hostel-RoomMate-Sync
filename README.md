@@ -203,7 +203,7 @@ The system includes endpoints to delete all data:
 ## 📞 Support
 
 For any feedback or support:
-- Instagram: [@itsmeshubh2026](https://www.instagram.com/itsmeshubh2026)
+- Instagram: [@itsmeshubh1008](https://www.instagram.com/itsmeshubh1008)
 
 ## 🎯 Future Enhancements
 
