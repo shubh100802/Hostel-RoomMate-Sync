@@ -1,4 +1,4 @@
-# 🏠 Mutual Hostel Room Manager
+# 🏠 **Hostel-RoomMate-Sync**
 
 A comprehensive web-based system for managing hostel room allocation with mutual roommate preferences at VIT Bhopal.
 
