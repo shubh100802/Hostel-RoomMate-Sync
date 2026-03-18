@@ -192,10 +192,6 @@ The system includes endpoints to delete all data:
 - Delete all preferences
 - Delete all room allocations
 
-## 📝 License
-
-This project is licensed under the ISC License.
-
 ## 🤝 Contributing
 
 1. Fork the repository
